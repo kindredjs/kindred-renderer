@@ -1,0 +1,20 @@
+{
+  "name": "kindred-renderer",
+  "version": "1.0.0",
+  "dependencies": {
+    "babel-plugin-transform-es2015-block-scoping": "^6.10.1",
+    "babel-plugin-transform-es2015-classes": "^6.9.0",
+    "babelify": "^7.3.0"
+  },
+  "browserify": {
+    "transform": [
+      "babelify"
+    ]
+  },
+  "babel": {
+    "plugins": [
+      "transform-es2015-classes",
+      "transform-es2015-block-scoping"
+    ]
+  }
+}
