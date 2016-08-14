@@ -4,7 +4,8 @@
   "dependencies": {
     "babel-plugin-transform-es2015-block-scoping": "^6.10.1",
     "babel-plugin-transform-es2015-classes": "^6.9.0",
-    "babelify": "^7.3.0"
+    "babelify": "^7.3.0",
+    "kindred-component": "^1.0.0"
   },
   "browserify": {
     "transform": [
