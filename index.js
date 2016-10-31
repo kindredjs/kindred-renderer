@@ -9,6 +9,7 @@ module.exports = class RenderComponent extends Component('render') {
     this.geometry = props.geometry
     this.shader = props.shader
     this.uniforms = props.uniforms || null
+    this.textures = props.textures || {}
   }
 
   stop () {
@@ -54,7 +55,7 @@ module.exports = class RenderComponent extends Component('render') {
       var index = 0
       for (var key in this.textures) {
         var tex = this.textures[key]
-        if (tex) uniforms[key] = tex.bind(index++)
+        if (tex) uniforms[key] = tex.bind(gl, index++)
       }
     }
 
