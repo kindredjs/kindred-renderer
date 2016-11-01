@@ -1,5 +1,7 @@
 var Component = require('kindred-component')
 
+var GL_TRIANGLES = 4
+
 var prevShader = null
 var prevFrame = null
 var prevGeom = null
@@ -13,6 +15,9 @@ module.exports = class RenderComponent extends Component('render') {
     this.textures = props.textures || {}
     this.drawStart = props.drawStart
     this.drawCount = props.drawCount
+    this.primitive = typeof props.primitive === 'number'
+      ? props.primitive
+      : GL_TRIANGLES
   }
 
   stop () {
