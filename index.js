@@ -2,6 +2,7 @@ var Component = require('kindred-component')
 
 var prevShader = null
 var prevFrame = null
+var prevGeom = null
 
 module.exports = class RenderComponent extends Component('render') {
   init (node, props) {
@@ -10,6 +11,8 @@ module.exports = class RenderComponent extends Component('render') {
     this.shader = props.shader
     this.uniforms = props.uniforms || null
     this.textures = props.textures || {}
+    this.drawStart = props.drawStart
+    this.drawCount = props.drawCount
   }
 
   stop () {
@@ -21,6 +24,7 @@ module.exports = class RenderComponent extends Component('render') {
   draw (props) {
     var shader = this.shader
     var uniforms = shader.uniforms
+    var changedShader = false
     var gl = props.gl
 
     if (!shader || !this.geometry) {
@@ -39,6 +43,7 @@ module.exports = class RenderComponent extends Component('render') {
       uniforms.uEye = props.eye
       prevShader = shader
       prevFrame = props.frame
+      changedShader = true
     }
 
     // Note: optimised previously to check if model/normal had changed
@@ -63,7 +68,11 @@ module.exports = class RenderComponent extends Component('render') {
       this.uniforms(gl, this.node, uniforms)
     }
 
-    this.geometry.bind(gl, shader.attributes)
-    this.geometry.draw(gl)
+    if (changedShader || prevGeom !== this.geometry) {
+      this.geometry.bind(gl, shader.attributes)
+      prevGeom = this.geometry
+    }
+
+    this.geometry.draw(gl, this.primitive, this.drawStart, this.drawCount)
   }
 }
