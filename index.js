@@ -27,6 +27,8 @@ module.exports = class RenderComponent extends Component('render') {
   }
 
   draw (props) {
+    if (this.node && this.node.data.visible === false) return
+
     var shader = this.shader
     var uniforms = shader.uniforms
     var changedShader = false
