@@ -1,68 +1,72 @@
-var Component = require('kindred-component')
+var Render = module.exports = require('./component')
 
-var prevShader = null
-var prevFrame = null
+var SORTER = '_kindredRendererSorter_' + Math.random().toString(36).slice(2)
+var SORTFN = '_kindredRendererSortFn_' + Math.random().toString(36).slice(2)
 
-module.exports = class RenderComponent extends Component('render') {
-  init (node, props) {
-    this.node = node
-    this.geometry = props.geometry
-    this.shader = props.shader
-    this.uniforms = props.uniforms || null
+Render.draw = function (gl, scene, camera) {
+  var drawProps = scene.getFrameProps(camera, gl.canvas.width, gl.canvas.height)
+
+  var background = scene.data.background
+  if (background) {
+    gl.clearColor(background[0], background[1], background[2], background[3])
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
   }
 
-  stop () {
-    this.geometry = null
-    this.shader = null
-    this.node = null
+  gl.viewport(0, 0, gl.canvas.width, gl.canvas.height)
+
+  var currSort = scene.data.drawSort || defaultSort
+  var lastSort = scene[SORTFN]
+  if (!scene[SORTER] || currSort !== lastSort) {
+    scene[SORTER] = scene.list(currSort)
+    scene[SORTFN] = currSort
   }
 
-  draw (props) {
-    var shader = this.shader
-    var uniforms = shader.uniforms
-    var gl = props.gl
+   // Temporary. Should reset lists when changing components,
+   // and manually on changing kindred-renderer data
+  // scene.resetLists()
 
-    if (!shader || !this.geometry) {
-      throw new Error('kindred-renderer component needs both a .geometry and .shader to be supplied')
-    }
+  var nodes = scene[SORTER]()
 
-    // Only switch shaders and upload common uniforms when necessary :)
-    // Frames are being counted to ensure that the state is "reset" at
-    // the start of a new frame.
-    if (shader !== prevShader || props.frame > prevFrame) {
-      shader.bind(gl)
-      uniforms.uFrame = props.frame
-      uniforms.uProj = props.proj
-      uniforms.uView = props.view
-      uniforms.uFog = props.fog
-      uniforms.uEye = props.eye
-      prevShader = shader
-      prevFrame = props.frame
-    }
+  drawProps.gl = gl
+  treePreDraw(nodes, drawProps)
+  treeDraw(nodes, drawProps)
+  treePostDraw(nodes, drawProps)
+  drawProps.gl = null
+}
 
-    // Note: optimised previously to check if model/normal had changed
-    // in the hope of reducing draw calls, found it increased CPU significantly.
-    // Will need to test further, but will probably only be useful on normal
-    // matrices if anything.
-    uniforms.uModel = this.node.modelMatrix
-    uniforms.uNormal = this.node.normalMatrix
+var treePostDraw = treeCall('postDraw')
+var treePreDraw = treeCall('preDraw')
+var treeDraw = treeCall('draw')
 
-    // Note: this could be optimised more by only rebinding textures
-    // when necessary. We could keep a "pool" of textures and just
-    // keep binding them to new indices only when required.
-    if (this.textures !== null) {
-      var index = 0
-      for (var key in this.textures) {
-        var tex = this.textures[key]
-        if (tex) uniforms[key] = tex.bind(index++)
+function treeCall (name) {
+  return function triggerDrawEvents (nodes, props) {
+    for (var i = 0; i < nodes.length; i++) {
+      var components = nodes[i]._componentList
+      for (var j = 0; j < components.length; j++) {
+        var component = components[j]
+        if (component[name]) component[name](props)
       }
     }
-
-    if (this.uniforms !== null) {
-      this.uniforms(gl, this.node, uniforms)
-    }
-
-    this.geometry.bind(gl, shader.attributes)
-    this.geometry.draw(gl)
   }
+}
+
+function defaultSort (a, b) {
+  var aRender = a.component(Render)
+  var bRender = b.component(Render)
+  if (!aRender) return -1
+  if (!bRender) return +1
+
+  if (aRender.zIndex !== bRender.zIndex) {
+    return aRender.zIndex - bRender.zIndex
+  }
+
+  var aShad = aRender.shader.id
+  var bShad = aRender.shader.id
+  if (aShad !== bShad) return aShad - bShad
+
+  var aGeom = aRender.geometry.id
+  var bGeom = bRender.geometry.id
+  if (aGeom !== bGeom) return aGeom - bGeom
+
+  return 0
 }
