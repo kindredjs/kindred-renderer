@@ -21,10 +21,6 @@ Render.draw = function (gl, scene, camera) {
     scene[SORTFN] = currSort
   }
 
-   // Temporary. Should reset lists when changing components,
-   // and manually on changing kindred-renderer data
-  // scene.resetLists()
-
   var nodes = scene[SORTER]()
 
   drawProps.gl = gl
