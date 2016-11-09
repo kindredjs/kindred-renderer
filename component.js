@@ -72,7 +72,7 @@ module.exports = class RenderComponent extends Component('render') {
           uniforms[key] = tex
         } else
         if (tex) {
-          uniforms[key] = tex.bind(index++)
+          uniforms[key] = tex.bind(gl, index++)
         }
       }
     }
