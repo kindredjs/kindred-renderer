@@ -1,6 +1,6 @@
 {
   "name": "kindred-renderer",
-  "version": "3.0.1",
+  "version": "4.0.0",
   "dependencies": {
     "babel-plugin-transform-es2015-block-scoping": "^6.10.1",
     "babel-plugin-transform-es2015-classes": "^6.9.0",
