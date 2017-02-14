@@ -5,13 +5,15 @@
     "babel-plugin-transform-es2015-block-scoping": "^6.10.1",
     "babel-plugin-transform-es2015-classes": "^6.9.0",
     "babelify": "^7.3.0",
+    "envify": "^3.4.1",
     "gl-mat4": "^1.1.4",
     "gl-vec3": "^1.0.3",
-    "kindred-component": "^1.0.0"
+    "kindred-component": "^1.1.0"
   },
   "browserify": {
     "transform": [
-      "babelify"
+      "babelify",
+      "envify"
     ]
   },
   "babel": {

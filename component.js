@@ -16,6 +16,7 @@ module.exports = class RenderComponent extends Component('render') {
     this.drawStart = props.drawStart
     this.drawCount = props.drawCount
     this.zIndex = props.zIndex || 0
+    this.stopped = false
     this.primitive = typeof props.primitive === 'number'
       ? props.primitive
       : GL_TRIANGLES
@@ -25,19 +26,22 @@ module.exports = class RenderComponent extends Component('render') {
     this.geometry = null
     this.shader = null
     this.node = null
+    this.stopped = true
   }
 
   draw (props) {
-    if (this.node && this.node.data.visible === false) return
+    if (this.stopped) return
+    if (!this.node.data.visible) return
 
     var shader = this.shader
-    var uniforms = shader.uniforms
     var changedShader = false
     var gl = props.gl
 
-    if (!shader || !this.geometry) {
+    if (process.env.NODE_ENV !== 'production' && (!shader || !this.geometry)) {
       throw new Error('kindred-renderer component needs both a .geometry and .shader to be supplied')
     }
+
+    var uniforms = shader.uniforms
 
     // Only switch shaders and upload common uniforms when necessary :)
     // Frames are being counted to ensure that the state is "reset" at
@@ -64,7 +68,7 @@ module.exports = class RenderComponent extends Component('render') {
     // Note: this could be optimised more by only rebinding textures
     // when necessary. We could keep a "pool" of textures and just
     // keep binding them to new indices only when required.
-    if (this.textures !== null) {
+    if (this.textures) {
       var index = 0
       for (var key in this.textures) {
         var tex = this.textures[key]

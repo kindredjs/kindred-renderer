@@ -39,8 +39,7 @@ function treeCall (name) {
     for (var i = 0; i < nodes.length; i++) {
       var components = nodes[i]._componentList
       for (var j = 0; j < components.length; j++) {
-        var component = components[j]
-        if (component[name]) component[name](props)
+        components[j][name](props)
       }
     }
   }
